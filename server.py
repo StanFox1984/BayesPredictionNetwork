@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+#from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from bayes_net import BayesNetwork, ObjectStringAssociator
 from cgi import parse_qs
 import os
@@ -32,23 +32,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 		s = s.replace("'", "")
 		#print s
 		s = parse_qs(s)
-		print str(s)
+		print (str(s))
 		if 'outcomes' in s:
 			outcomes = s['outcomes'][0].split(',')
 			s['outcomes'] = [ i.replace(" ", "") for i in outcomes ]
-			print str(s)
-                if 'submit' in s:
-		    print "Learning outcomes: ", s['outcomes']
+			print (str(s))
+		if 'submit' in s:
+		    print ("Learning outcomes: ", s['outcomes'])
                     #self.wfile.write(str(s))
 		    net.learn_outcomes(s['outcomes'])
 		if 'predict' in s:
-		    print "Predicting outcomes: ", s['outcomes'], s['steps']
+		    print ("Predicting outcomes: ", s['outcomes'], s['steps'])
 		    o = net.predict_outcome(s['outcomes'][-1], int(s['steps'][0]))
-		    print o
+		    print (o)
 		    self.wfile.write(str(o))
-                with open ("page.html", "r") as myfile:
+		with open ("page.html", "r") as myfile:
 			data=myfile.read()
-		        self.wfile.write(data)
+			self.wfile.write(data)
 		return
 
 try:
@@ -60,5 +60,5 @@ try:
 	httpd.serve_forever()
 
 except KeyboardInterrupt:
-	print '^C received, shutting down the web server'
+	print ('^C received, shutting down the web server')
 	server.socket.close()

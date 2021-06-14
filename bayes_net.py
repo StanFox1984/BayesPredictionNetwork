@@ -16,8 +16,8 @@ class BayesNode:
         self.outcomes[node] += 1
         self.total += 1
         self._regenerate_ranges()
-        print self.outcomes, self.total
-        print self.ranges
+        print (self.outcomes, self.total)
+        print (self.ranges)
 
     def predict_outcome(self):
         i = random.randint(0, self.total)
@@ -66,7 +66,7 @@ class ObjectOrthogonalAssociator:
         if obj not in self.objects:
             self.objects.append(obj)
         self.total_occurences += 1
-        print self.attribute_registrator
+        print (self.attribute_registrator)
     def _calc_attr_match_metric(self, o1, o2, ind):
         if type(o1) == str:
             dist = float(abs(ord(o1[ind]) - ord(o2[ind])))
@@ -97,7 +97,7 @@ class BayesNetwork:
                 self.hash_to_nodes[hash(o)] = BayesNode(o)
                 self.associator.register_object(o)
         nodes = [ self.hash_to_nodes[hash(o)] for o in objects ]
-        for i in xrange(0, len(nodes) - 1):
+        for i in range(0, len(nodes) - 1):
             nodes[i].learn_outcome(nodes[i+1])
     def predict_outcome(self, _o, steps):
         objects = [ ]
@@ -106,7 +106,7 @@ class BayesNetwork:
         else:
             o = _o
         node = self.hash_to_nodes[hash(o)]
-        for i in xrange(0, steps):
+        for i in range(0, steps):
             node = node.predict_outcome()
             if node == None:
                 return objects
@@ -121,4 +121,4 @@ def test():
     return net.predict_outcome("tone", 4)
 
 
-print test()
+print (test())
