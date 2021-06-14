@@ -23,16 +23,16 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 		self.send_header('Content-type','text/html')
 		self.end_headers()
 		# Send the html message
-                #print self.path
-                s = self.path.replace("%20", " ")
-                #print s
-                s = s.replace("/", "")
-                s = s.replace("?", "")
-                #print s
-                s = s.replace("'", "")
-                #print s
-                s = parse_qs(s)
-                print str(s)
+		#print self.path
+		s = self.path.replace("%20", " ")
+		#print s
+		s = s.replace("/", "")
+		s = s.replace("?", "")
+		#print s
+		s = s.replace("'", "")
+		#print s
+		s = parse_qs(s)
+		print str(s)
 		if 'outcomes' in s:
 			outcomes = s['outcomes'][0].split(',')
 			s['outcomes'] = [ i.replace(" ", "") for i in outcomes ]
