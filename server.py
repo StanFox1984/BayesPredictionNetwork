@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from bayes_net import BayesNetwork, ObjectStringAssociator
-from cgi import parse_qs
+from urllib.parse import parse_qs
 import os
 import http.server
 import socketserver
