@@ -6,7 +6,10 @@ import pickle
 import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from bayes_net import BayesNetwork, ObjectStringAssociator
-from cgi import parse_qs
+from urllib.parse import parse_qs
+import os
+import http.server
+import socketserver
 
 PORT_NUMBER = 8080
 
