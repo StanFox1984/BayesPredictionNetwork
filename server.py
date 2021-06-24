@@ -48,7 +48,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 		    self.wfile.write(str(o))
 		with open ("page.html", "r") as myfile:
 			data=myfile.read()
-			self.wfile.write(data)
+			self.wfile.write(data.encode())
 		return
 
 try:
