@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
 from bayes_net import BayesNetwork, ObjectStringAssociator
-from cgi import parse_qs
+from urllib.parse import parse_qs
 import os
 import http.server
 import socketserver
@@ -45,7 +45,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 		    print ("Predicting outcomes: ", s['outcomes'], s['steps'])
 		    o = net.predict_outcome(s['outcomes'][-1], int(s['steps'][0]))
 		    print (o)
-		    self.wfile.write(str(o))
+		    self.wfile.write(str(o).encode())
 		with open ("page.html", "r") as myfile:
 			data=myfile.read()
 			self.wfile.write(data.encode())
