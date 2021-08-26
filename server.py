@@ -45,10 +45,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 		    print ("Predicting outcomes: ", s['outcomes'], s['steps'])
 		    o = net.predict_outcome(s['outcomes'][-1], int(s['steps'][0]))
 		    print (o)
-		    self.wfile.write(str(o))
+		    self.wfile.write(str(o).encode())
 		with open ("page.html", "r") as myfile:
 			data=myfile.read()
-			self.wfile.write(data)
+			self.wfile.write(data.encode())
 		return
 
 try:
