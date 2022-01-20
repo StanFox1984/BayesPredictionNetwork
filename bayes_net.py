@@ -21,17 +21,17 @@ class BayesNode:
         self.outcomes[node] += 1.0
         self.total += 1
         self._regenerate_ranges()
-        print "Node ", self.data, "learned outcome ", node.data, self.outcomes, self.total, "prob ", self.outcomes[node] / self.total
-        print self.outcomes, self.total
-        print self.ranges
+        print("Node ", self.data, "learned outcome ", node.data, self.outcomes, self.total, "prob ", self.outcomes[node] / self.total)
+        print(self.outcomes, self.total)
+        print(self.ranges)
 
     def print_info(self):
-        print "Node ", self.data
-        print "======================================="
-        print "Outcomes:"
+        print("Node ", self.data)
+        print("=======================================")
+        print("Outcomes:")
         for node in self.outcomes:
-            print "Node", node.data, "hits", self.outcomes[node], "prob", self.outcomes[node] / self.total
-        print "======================================="
+            print("Node", node.data, "hits", self.outcomes[node], "prob", self.outcomes[node] / self.total)
+        print("=======================================")
 
     def print_info_str(self):
         s = "Node " + str(self.data) + "<br>"
@@ -111,9 +111,9 @@ class ObjectOrthogonalAssociator:
         if obj not in self.objects:
             self.objects.append(obj)
         self.total_occurences += 1
-        print self.attribute_registrator
+        print(self.attribute_registrator)
     def _calc_weight(self, ind):
-        print "Attr: ", self.attribute_registrator[ind]
+        print("Attr: ", self.attribute_registrator[ind])
         weight = self.total_occurences / len(self.attribute_registrator[ind])
         return weight
     def find_closest(self, obj):
@@ -121,14 +121,14 @@ class ObjectOrthogonalAssociator:
         max_weight = int(0)
         for o in self.objects:
             w = 0.0
-            for ind in xrange(0, min(len(o), len(obj))):
+            for ind in range(0, min(len(o), len(obj))):
                 if type(o) == str:
                     r = SequenceMatcher(None, str(o), str(obj)).ratio()
                     w += self._calc_weight(ind) * r
                 else:
                     diff = float(abs(int(o[ind]) - int(obj[ind])))
                     w += self._calc_weight(ind) / diff
-            print o, "Weight: ", w
+            print(o, "Weight: ", w)
             if w > max_weight:
                 max_obj = o
                 max_weight = w
@@ -142,26 +142,26 @@ class BayesNetwork:
     def learn_outcomes(self, objects):
         for o in objects:
             if hash(o) not in self.hash_to_nodes:
-                print o, " is not in ", self.hash_to_nodes, hash(o)
+                print(o, " is not in ", self.hash_to_nodes, hash(o))
                 node = BayesNode(o)
                 self.hash_to_nodes[hash(o)] = node
                 self.nodes.append(node)
                 self.associator.register_object(o)
         nodes = [ self.hash_to_nodes[hash(o)] for o in objects ]
-        for i in xrange(0, len(nodes) - 1):
+        for i in range(0, len(nodes) - 1):
             nodes[i].learn_outcome(nodes[i+1])
     def predict_outcome(self, _o, steps):
         objects = [ ]
-        print self.hash_to_nodes
+        print(self.hash_to_nodes)
         if hash(_o) not in self.hash_to_nodes:
 
             o = self.associator.find_closest(_o)
         else:
             o = _o
-        print "Closest is: ", o
+        print("Closest is: ", o)
         node = self.hash_to_nodes[hash(o)]
-        print "Node is ", node, node.outcomes
-        for i in xrange(0, steps):
+        print("Node is ", node, node.outcomes)
+        for i in range(0, steps):
             node = node.predict_outcome()
             if node == None:
                 return objects
@@ -187,7 +187,7 @@ def test_orthogonal_associator():
     net.learn_outcomes([ "Dog", "Marianna" ])
     net.learn_outcomes([ "Slava", "Wolfy" ])
     net.learn_outcomes([ "Dog", "Wolfy" ])
-    print net.predict_outcome("Doglava", 2)
+    print(net.predict_outcome("Doglava", 2))
 
 def test_string_associator():
     net = BayesNetwork(ObjectStringAssociator)
@@ -198,7 +198,7 @@ def test_string_associator():
     net.learn_outcomes([ "Dog", "Marianna" ])
     net.learn_outcomes([ "Slava", "Wolfy" ])
     net.learn_outcomes([ "Dog", "Wolfy" ])
-    print net.predict_outcome("Doglava", 2)
+    print(net.predict_outcome("Doglava", 2))
 
 
 
