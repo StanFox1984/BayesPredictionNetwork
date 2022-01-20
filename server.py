@@ -82,7 +82,7 @@ class myHandler(BaseHTTPRequestHandler):
 
         with open("page.html", "r") as myfile:
             data = myfile.read()
-            self.wfile.write(data)
+            self.wfile.write(data.encode())
         return
 
 
