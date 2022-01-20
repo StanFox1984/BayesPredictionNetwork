@@ -135,7 +135,7 @@ def remove_blob_from_file(db_file, net_id):
     os.remove(str(net_id)) 
 
 def insert_blob_to_file(db_file, blob, net_id):
-    with open(str(net_id), "w") as myfile:
+    with open(str(net_id), "wb") as myfile:
         myfile.write(blob)
 
 try:
