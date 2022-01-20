@@ -1,64 +1,138 @@
 #!/usr/bin/python
-#from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
-from bayes_net import BayesNetwork, ObjectStringAssociator
-from urllib.parse import parse_qs
+
+import sqlite3
+import pickle
+
 import os
-import http.server
-import socketserver
-
-from http import HTTPStatus
-
+from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from bayes_net import BayesNetwork, ObjectStringAssociator
+from cgi import parse_qs
 
 PORT_NUMBER = 8080
 
-#This class will handles any incoming request from
-#the browser 
-net = BayesNetwork(ObjectStringAssociator)
+#This class will handle any incoming request from
+#the browser
+net = None
 
-class Handler(http.server.SimpleHTTPRequestHandler):
+conn = None
+ablob = None
+net_id = -1
+
+class myHandler(BaseHTTPRequestHandler):
 	
 	#Handler for the GET requests
 	def do_GET(self):
+		global net_id
+		global net
+		global ablob
+		global conn
+
 		self.send_response(200)
 		self.send_header('Content-type','text/html')
 		self.end_headers()
 		# Send the html message
-		#print self.path
-		s = self.path.replace("%20", " ")
-		#print s
-		s = s.replace("/", "")
-		s = s.replace("?", "")
-		#print s
-		s = s.replace("'", "")
-		#print s
-		s = parse_qs(s)
-		print (str(s))
+                #print self.path
+                s = self.path.replace("%20", " ")
+                #print s
+                s = s.replace("/", "")
+                s = s.replace("?", "")
+                #print s
+                s = s.replace("'", "")
+                #print s
+                s = parse_qs(s)
+                print str(s)
 		if 'outcomes' in s:
 			outcomes = s['outcomes'][0].split(',')
 			s['outcomes'] = [ i.replace(" ", "") for i in outcomes ]
-			print (str(s))
-		if 'submit' in s:
-		    print ("Learning outcomes: ", s['outcomes'])
+			print str(s)
+		if "Net id" in s and 'load' in s:
+		    last_net_id = net_id
+		    net_id = int(s["Net id"][0])
+                    if last_net_id != net_id:
+                        ablob = load_blob_from_db("db", net_id)
+			if ablob != None:
+				print "Loaded blob"
+				net = load_net_from_blob(ablob)
+			else:
+				print "No blob found"
+				net = BayesNetwork(ObjectStringAssociator)
+			last_net_id = net_id
+		    self.wfile.write(net.print_info_str())
+                if 'submit' in s:
+		    print "Learning outcomes: ", s['outcomes']
                     #self.wfile.write(str(s))
+		    if net == None:
+		        net = BayesNetwork(ObjectStringAssociator)
 		    net.learn_outcomes(s['outcomes'])
+		    blob = pickle.dumps(net)
+		    if ablob != None:
+		        remove_blob("db", net_id)
+		    insert_blob("db", blob, net_id)
 		if 'predict' in s:
-		    print ("Predicting outcomes: ", s['outcomes'], s['steps'])
+		    print "Predicting outcomes: ", s['outcomes'], s['steps']
 		    o = net.predict_outcome(s['outcomes'][-1], int(s['steps'][0]))
-		    print (o)
-		    self.wfile.write(str(o).encode())
-		with open ("page.html", "r") as myfile:
+		    print o
+		    self.wfile.write(str(o))
+
+                with open ("page.html", "r") as myfile:
 			data=myfile.read()
-			self.wfile.write(data.encode())
+		        self.wfile.write(data)
 		return
 
+def create_or_open_db(db_file):
+    db_is_new = not os.path.exists(db_file)
+    conn = sqlite3.connect(db_file)
+    if db_is_new:
+        print 'Creating schema'
+        sql = '''create table if not exists NETS(
+        ID INTEGER,
+        BAYES_NET BLOB)'''
+        conn.execute(sql) # shortcut for conn.cursor().execute(sql)
+    else:
+        print 'Schema exists\n'
+    return conn
+
+def load_blob_from_db(db_file, net_id):
+	conn = create_or_open_db(db_file)
+	cur = conn.cursor()
+	print net_id
+	cur.execute("select * from NETS where ID=?", (net_id, ))
+	blob = cur.fetchone()
+	cur.close()
+	return blob
+
+def load_net_from_blob(blob):
+	net = pickle.loads(blob[1])
+	net.print_info()
+	return net
+
+def remove_blob(db_file, net_id):
+	conn = create_or_open_db(db_file)
+	sql = '''DELETE FROM NETS WHERE ID=?'''
+        conn.execute(sql, (net_id,))
+	conn.close()
+
+def insert_blob(db_file, blob, net_id):
+	conn = create_or_open_db(db_file)
+        sql = '''INSERT OR IGNORE INTO NETS
+        (ID, BAYES_NET)
+        VALUES(?,?);'''
+        conn.execute(sql, (net_id, sqlite3.Binary(blob)))
+        conn.commit()
+        sql = '''UPDATE NETS SET
+        BAYES_NET=? WHERE ID=0;'''
+        conn.execute(sql,[sqlite3.Binary(blob)]) 
+        conn.commit()
+	conn.close()
 try:
 	#Create a web server and define the handler to manage the
 	#incoming request
-	port = int(os.getenv('PORT', 80))
-	print('Listening on port %s' % (port))
-	httpd = socketserver.TCPServer(('', port), Handler)
-	httpd.serve_forever()
+	server = HTTPServer(('', PORT_NUMBER), myHandler)
+	print 'Started httpserver on port ' , PORT_NUMBER
+	
+	#Wait forever for incoming htto requests
+	server.serve_forever()
 
 except KeyboardInterrupt:
-	print ('^C received, shutting down the web server')
+	print '^C received, shutting down the web server'
 	server.socket.close()
