@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sqlite3
+#import sqlite3
 import pickle
 
 import os
@@ -50,7 +50,7 @@ class myHandler(BaseHTTPRequestHandler):
             last_net_id = net_id
             net_id = int(s["Net id"][0])
             if last_net_id != net_id:
-                ablob = load_blob_from_db("db", net_id)
+                ablob = load_blob_from_db_file("db", net_id)
                 if ablob != None:
                     print "Loaded blob"
                     net = load_net_from_blob(ablob)
@@ -60,6 +60,8 @@ class myHandler(BaseHTTPRequestHandler):
                 last_net_id = net_id
             self.wfile.write(net.print_info_str())
         if "submit" in s:
+            if net_id == -1:
+                net_id = int(s["Net id"][0])
             print "Learning outcomes: ", s["outcomes"]
             # self.wfile.write(str(s))
             if net == None:
@@ -67,8 +69,8 @@ class myHandler(BaseHTTPRequestHandler):
             net.learn_outcomes(s["outcomes"])
             blob = pickle.dumps(net)
             if ablob != None:
-                remove_blob("db", net_id)
-            insert_blob("db", blob, net_id)
+                remove_blob_from_file("db", net_id)
+            insert_blob_to_file("db", blob, net_id)
         if "predict" in s:
             print "Predicting outcomes: ", s["outcomes"], s["steps"]
             o = net.predict_outcome(s["outcomes"][-1], int(s["steps"][0]))
@@ -104,33 +106,34 @@ def load_blob_from_db(db_file, net_id):
     cur.close()
     return blob
 
-
 def load_net_from_blob(blob):
     net = pickle.loads(blob[1])
     net.print_info()
     return net
 
+def create_or_open_db_from_file(db_file):
+    if not os.path.exists(db_file):
+        f = open(str(db_file), "w")
+        f.close()
+    return None
 
-def remove_blob(db_file, net_id):
-    conn = create_or_open_db(db_file)
-    sql = """DELETE FROM NETS WHERE ID=?"""
-    conn.execute(sql, (net_id,))
-    conn.close()
+def load_blob_from_db_file(db_file, net_id):
+    create_or_open_db_from_file(str(net_id))
+    myfile = open(str(net_id), "r")
+    data = myfile.read()
+    print data
+    myfile.close()
+    if len(data) == 0:
+        print "Empty file!"
+        return None
+    return (data, data)
 
+def remove_blob_from_file(db_file, net_id):
+    os.remove(str(net_id)) 
 
-def insert_blob(db_file, blob, net_id):
-    conn = create_or_open_db(db_file)
-    sql = """INSERT OR IGNORE INTO NETS
-        (ID, BAYES_NET)
-        VALUES(?,?);"""
-    conn.execute(sql, (net_id, sqlite3.Binary(blob)))
-    conn.commit()
-    sql = """UPDATE NETS SET
-        BAYES_NET=? WHERE ID=0;"""
-    conn.execute(sql, [sqlite3.Binary(blob)])
-    conn.commit()
-    conn.close()
-
+def insert_blob_to_file(db_file, blob, net_id):
+    with open(str(net_id), "w") as myfile:
+        myfile.write(blob)
 
 try:
     # Create a web server and define the handler to manage the
