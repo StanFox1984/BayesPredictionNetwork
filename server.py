@@ -61,7 +61,7 @@ class myHandler(BaseHTTPRequestHandler):
                     print("No blob found")
                     net = BayesNetwork(ObjectStringAssociator)
                 last_net_id = net_id
-            self.wfile.write(net.print_info_str())
+            self.wfile.write(net.print_info_str().encode())
         if "submit" in s:
             if net_id == -1:
                 net_id = int(s["Net id"][0])
@@ -78,7 +78,7 @@ class myHandler(BaseHTTPRequestHandler):
             print("Predicting outcomes: ", s["outcomes"], s["steps"])
             o = net.predict_outcome(s["outcomes"][-1], int(s["steps"][0]))
             print(o)
-            self.wfile.write(str(o))
+            self.wfile.write(str(o).encode())
 
         with open("page.html", "r") as myfile:
             data = myfile.read()
@@ -122,7 +122,7 @@ def create_or_open_db_from_file(db_file):
 
 def load_blob_from_db_file(db_file, net_id):
     create_or_open_db_from_file(str(net_id))
-    myfile = open(str(net_id), "r")
+    myfile = open(str(net_id), "rb")
     data = myfile.read()
     print(data)
     myfile.close()
