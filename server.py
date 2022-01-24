@@ -21,7 +21,6 @@ conn = None
 ablob = None
 net_id = -1
 
-
 class myHandler(BaseHTTPRequestHandler):
 
     # Handler for the GET requests

@@ -17,12 +17,29 @@ body {
 <p style="color:green; font-size:20px">
 <input name="Net id" type="text" value="0" />Network id to manipulate<br>
 <input name="outcomes" type="text" value="" />Example: one, two, three<br>
-<input name="steps" type="text" value="1" />Number of forecast steps<br>
-<br /> 
+<p>Click on the "Choose File" button to upload a file. Events should be comma separated.</p>
+<input type="file" id="myFile" name="filename" onchange="loadFile(event)"><br>
 <input type="submit" name="load" class="button button1" value="Load"/>Load Bayes network<br>
-<input type="submit" name="submit" class="button button1" value="Submit"/>Learn<br>
+<input type="submit" name="submit" class="button button1" value="Submit"/>Learn
+<br>
 <input type="submit" name="predict" class="button button1" value="Predict"/>Predict<br>
+<input name="steps" type="text" value="1" />Number of forecast steps<br>
 </p>
+
+<script>
+var loadFile = function(event) {
+	var fileToLoad = document.getElementsByName("filename")[0].files[0];
+
+	var fileReader = new FileReader();
+		fileReader.onload = function(fileLoadedEvent){
+ 		var textFromFileLoaded = fileLoadedEvent.target.result;
+ 		document.getElementsByName("outcomes")[0].value = textFromFileLoaded;
+ 	};
+
+	fileReader.readAsText(fileToLoad, "UTF-8");
+};
+</script>
+
 </form>
 </body>
 </html>
