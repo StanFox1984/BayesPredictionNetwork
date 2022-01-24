@@ -34,12 +34,12 @@ class BayesNode:
         print("=======================================")
 
     def print_info_str(self):
-        s = "Node " + str(self.data) + "<br>"
-        s += "=======================================<br>"
-        s += "Outcomes:<br>"
+        s = "Node " + str(self.data) + "\n"
+        s += "=======================================\n"
+        s += "Outcomes:\n"
         for node in self.outcomes:
-            s += "Node " + str(node.data) + " hits " + str(self.outcomes[node]) + " prob " + str(self.outcomes[node] / self.total) + "<br>"
-        s += "=======================================<br>"
+            s += "Node " + str(node.data) + " hits " + str(self.outcomes[node]) + " prob " + str(self.outcomes[node] / self.total) + "\n"
+        s += "=======================================\n"
         return s
 
     def predict_outcome(self):
@@ -71,11 +71,16 @@ class ObjectStringAssociator:
         if obj not in self.objects:
             self.objects.append(obj)
     def find_closest(self, obj):
-        max_ratio = 0
+        max_ratio = None
         max_obj = None
+        if len(self.objects) == 0:
+            print ("No registered objects!")
         for o in self.objects:
             r = SequenceMatcher(None, str(o), str(obj)).ratio()
-            if max_ratio < r:
+            if max_ratio == None:
+                max_ratio = r
+                max_obj = o
+            elif max_ratio < r:
                 max_ratio = r
                 max_obj = o
         return max_obj
@@ -141,25 +146,25 @@ class BayesNetwork:
         self.associator = t()
     def learn_outcomes(self, objects):
         for o in objects:
-            if hash(o) not in self.hash_to_nodes:
-                print(o, " is not in ", self.hash_to_nodes, hash(o))
+            if str(o) not in self.hash_to_nodes:
+                print(o, " is not in ", self.hash_to_nodes, str(o))
                 node = BayesNode(o)
-                self.hash_to_nodes[hash(o)] = node
+                self.hash_to_nodes[str(o)] = node
                 self.nodes.append(node)
                 self.associator.register_object(o)
-        nodes = [ self.hash_to_nodes[hash(o)] for o in objects ]
+        nodes = [ self.hash_to_nodes[str(o)] for o in objects ]
         for i in range(0, len(nodes) - 1):
             nodes[i].learn_outcome(nodes[i+1])
     def predict_outcome(self, _o, steps):
         objects = [ ]
         print(self.hash_to_nodes)
-        if hash(_o) not in self.hash_to_nodes:
+        if str(_o) not in self.hash_to_nodes:
 
             o = self.associator.find_closest(_o)
         else:
             o = _o
-        print("Closest is: ", o)
-        node = self.hash_to_nodes[hash(o)]
+        print("Closest is: ", o, self.hash_to_nodes, str(o))
+        node = self.hash_to_nodes[str(o)]
         print("Node is ", node, node.outcomes)
         for i in range(0, steps):
             node = node.predict_outcome()

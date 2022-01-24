@@ -21,6 +21,14 @@ conn = None
 ablob = None
 net_id = -1
 
+def create_text_field_opening_tag(_id, name):
+	s = '<textarea id="' + _id +'" name="' + name + '" rows="16" cols="150">'
+	return s
+
+def create_text_field_closing_tag():
+	s = '</textarea>'
+	return s
+
 class myHandler(BaseHTTPRequestHandler):
 
     # Handler for the GET requests
@@ -60,7 +68,10 @@ class myHandler(BaseHTTPRequestHandler):
                     print("No blob found")
                     net = BayesNetwork(ObjectStringAssociator)
                 last_net_id = net_id
+
+            self.wfile.write(create_text_field_opening_tag("Bayes net", "Bayes net").encode())
             self.wfile.write(net.print_info_str().encode())
+            self.wfile.write(create_text_field_closing_tag().encode())
         if "submit" in s:
             if net_id == -1:
                 net_id = int(s["Net id"][0])
@@ -73,11 +84,13 @@ class myHandler(BaseHTTPRequestHandler):
             if ablob != None:
                 remove_blob_from_file("db", net_id)
             insert_blob_to_file("db", blob, net_id)
-        if "predict" in s:
+        if "predict" in s and "outcomes" in s:
             print("Predicting outcomes: ", s["outcomes"], s["steps"])
             o = net.predict_outcome(s["outcomes"][-1], int(s["steps"][0]))
             print(o)
+            self.wfile.write(create_text_field_opening_tag("Results", "Results").encode())
             self.wfile.write(str(o).encode())
+            self.wfile.write(create_text_field_closing_tag().encode())
 
         with open("page.html", "r") as myfile:
             data = myfile.read()
