@@ -21,15 +21,16 @@ That forecasting tool uses modified Bayesian network(https://en.wikipedia.org/wi
 to predict the upcoming events. However just as a neural network it requires to study first.
 </h1>
 </header>
-<input name="Net id" type="text" value="0" />Network id to manipulate<br>
-<input name="outcomes" type="text" value="" />Example: one, two, three<br>
+<input name="Net id" type="text" value="0" /> --> Network id to manipulate<br>
+<h2>Input data:</h2>
+<textarea  name="outcomes" type="text" value="" rows="4" cols="80"></textarea><br>Example: one, two, three<br>
 <p>Click on the "Choose File" button to upload a file. Events should be comma separated.</p>
 <input type="file" id="myFile" name="filename" onchange="loadFile(event)"><br>
-<input type="submit" name="load" class="button button1" value="Load"/>Load Bayes network<br>
-<input type="submit" name="submit" class="button button1" value="Submit"/>Learn
+<input type="submit" name="load" class="button button1" value="Load"/> --> Load Bayes network<br>
+<input type="submit" name="submit" class="button button1" value="Submit"/> --> Learn
 <br>
-<input type="submit" name="predict" class="button button1" value="Predict"/>Predict<br>
-<input name="steps" type="text" value="1" />Number of forecast steps<br>
+<input type="submit" name="predict" class="button button1" value="Predict"/> --> Predict<br>
+<input name="steps" type="text" value="1" /> --> Number of forecast steps<br>
 </p>
 
 <script>
@@ -43,6 +44,7 @@ var loadFile = function(event) {
  	};
 
 	fileReader.readAsText(fileToLoad, "UTF-8");
+	alert("Check the loaded input data and press submit, once ready");
 };
 </script>
 
