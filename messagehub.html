@@ -1,0 +1,43 @@
+<html>
+<body>
+<style>
+body {
+  background-color: lightblue;
+}
+.button1 {
+  background-color: blue;
+  color: black;
+  border: 2px solid #4CAF50;
+  cursor: pointer;
+  width: 80px;
+  height: 40px;
+}
+</style>
+<form method="get">
+<p style="color:green; font-size:20px">
+<a href="https://bayes-prediction-network-54bha.ondigitalocean.app/?mailbox=''&id='raspberry'&message='red'&send=''"
+<input type="submit" name="red" class="button button1" value="red"/> --> Red<br>
+</a>
+<a href="https://bayes-prediction-network-54bha.ondigitalocean.app/?mailbox=''&id='raspberry'&message='yellow'&send=''"
+<input type="submit" name="yellow" class="button button1" value="yellow"/> --> Yellow<br>
+</a>
+</p>
+
+<script>
+var loadFile = function(event) {
+	var fileToLoad = document.getElementsByName("filename")[0].files[0];
+
+	var fileReader = new FileReader();
+		fileReader.onload = function(fileLoadedEvent){
+ 		var textFromFileLoaded = fileLoadedEvent.target.result;
+ 		document.getElementsByName("outcomes")[0].value = textFromFileLoaded;
+ 	};
+
+	fileReader.readAsText(fileToLoad, "UTF-8");
+	alert("Check the loaded input data and press submit, once ready");
+};
+</script>
+
+</form>
+</body>
+</html>

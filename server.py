@@ -55,13 +55,18 @@ class myHandler(BaseHTTPRequestHandler):
         s = parse_qs(s)
         print(str(s))
 
-        if "mailbox" in s and "id" in s and "message" in s:
-            message = s["message"][0]
-            _id = s["id"][0]
-            if "send" in s:
-                mbox[_id] = message
-            elif "recv" in s and _id in mbox:
-                self.wfile.write(mbox[_id].encode())
+        if "mailbox" in s:
+            if "id" in s and "message" in s:
+                message = s["message"][0]
+                _id = s["id"][0]
+                if "send" in s:
+                    mbox[_id] = message
+                elif "recv" in s and _id in mbox:
+                    self.wfile.write(mbox[_id].encode())
+                    return
+            with open("messagehub.html", "r") as myfile:
+                data = myfile.read()
+                self.wfile.write(data.encode())
             print ("mail box logic")
             return
         if "outcomes" in s:
