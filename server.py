@@ -29,14 +29,16 @@ def create_text_field_closing_tag():
 	s = '</textarea>'
 	return s
 
-class myHandler(BaseHTTPRequestHandler):
+mbox = { }
 
+class myHandler(BaseHTTPRequestHandler):
     # Handler for the GET requests
     def do_GET(self):
         global net_id
         global net
         global ablob
         global conn
+        global mbox
 
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -52,6 +54,15 @@ class myHandler(BaseHTTPRequestHandler):
         # print s
         s = parse_qs(s)
         print(str(s))
+
+        if "mailbox" in s and "id" in s and "message" in s:
+            message = s["message"][0]
+            _id = s["id"][0]
+            if "send" in s:
+                mbox[_id] = message
+            if "recv" in s and _id in mbox:
+                self.wfile.write(mbox[_id].encode())
+            return
         if "outcomes" in s:
             outcomes = s["outcomes"][0].split(",")
             s["outcomes"] = [i.replace(" ", "") for i in outcomes]
