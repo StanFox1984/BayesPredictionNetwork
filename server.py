@@ -60,8 +60,9 @@ class myHandler(BaseHTTPRequestHandler):
             _id = s["id"][0]
             if "send" in s:
                 mbox[_id] = message
-            if "recv" in s and _id in mbox:
+            elif "recv" in s and _id in mbox:
                 self.wfile.write(mbox[_id].encode())
+            print ("mail box logic")
             return
         if "outcomes" in s:
             outcomes = s["outcomes"][0].split(",")
