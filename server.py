@@ -34,6 +34,10 @@ mbox = { }
 
 hub = message_hub()
 
+resync_freq = 5
+resync_cnt = 0
+mbox_loaded = True
+
 class myHandler(BaseHTTPRequestHandler):
     # Handler for the GET requests
     def do_GET(self):
@@ -73,9 +77,21 @@ class myHandler(BaseHTTPRequestHandler):
             print ("mail box logic")
             return
         if "mailbox_new" in s:
+            if mbox_loaded == False:
+                    create_or_open_db_from_file("mbox")
+                    ablob = load_blob_from_db_file("db", net_id)[0]
+                    hub = pickle.loads(ablob)
+                    mbox_loaded = True
             data = hub.handle_request(s)
             self.wfile.write(data.encode())
             print ("mail box logic2")
+            resync_cnt += 1
+            if resync_cnt >= resync_freq:
+                resync_cnt = 0
+                d = pickle.dumps(hub)
+                create_or_open_db_from_file("mbox")
+                remove_blob_from_file("mbox", "mbox"):
+                insert_blob_to_file("mbox", d, "mbox")
             return
         if "outcomes" in s:
             outcomes = s["outcomes"][0].split(",")
