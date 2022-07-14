@@ -36,7 +36,7 @@ hub = message_hub()
 
 resync_freq = 5
 resync_cnt = 0
-mbox_loaded = True
+mbox_loaded = False
 
 class myHandler(BaseHTTPRequestHandler):
     # Handler for the GET requests
