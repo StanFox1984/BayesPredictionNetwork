@@ -8,13 +8,22 @@ class message_hub:
         self.user_hashes = { }
 
     def __getattr__(self, method):
-        if '_' in str(method):
+        if 'extract_' in str(method):
             name = str(method).split('extract_')[1]
         else:
             name = str(method)
         self.add_extract_method(name)
 #        print (method)
         return self.__dict__[method]
+
+    def __getstate__(self):
+        new_dict = { }
+        for key in self.__dict__:
+            if not "extract" in key:
+                new_dict[key] = self.__dict__[key]
+        return new_dict
+
+    def __setstate__(self, d): self.__dict__.update(d)
 
     def add_extract_method(self, name):
         construct_str = "def extract_" + name + "(s): return s['" + name + "'][0]"
@@ -92,7 +101,13 @@ class message_hub:
                 self.mbox[to] += "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
 
         if "recv" in s:
-            return self.mbox[_id]
+            if _id in self.mbox[_id]:
+                return self.mbox[_id]
+            err_str = "Mailbox is empty!"
+            print (err_str)
+            return err_str
+
+        return "Success!"
 
 
 def test():

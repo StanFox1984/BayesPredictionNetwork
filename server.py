@@ -32,11 +32,10 @@ def create_text_field_closing_tag():
 
 mbox = { }
 
-hub = message_hub()
+hub = None
 
-resync_freq = 5
+resync_freq = 1
 resync_cnt = 0
-mbox_loaded = False
 
 class myHandler(BaseHTTPRequestHandler):
     # Handler for the GET requests
@@ -46,6 +45,10 @@ class myHandler(BaseHTTPRequestHandler):
         global ablob
         global conn
         global mbox
+        global resync_freq
+        global resync_cnt
+        global mbox_loaded
+        global hub
 
         self.send_response(200)
         self.send_header("Content-type", "text/html")
@@ -77,11 +80,13 @@ class myHandler(BaseHTTPRequestHandler):
             print ("mail box logic")
             return
         if "mailbox_new" in s:
-            if mbox_loaded == False:
+            if hub == None:
                     create_or_open_db_from_file("mbox")
-                    ablob = load_blob_from_db_file("db", net_id)[0]
-                    hub = pickle.loads(ablob)
-                    mbox_loaded = True
+                    ablob = load_blob_from_db_file("mbox", "mbox")
+                    if ablob != None:
+                        hub = pickle.loads(ablob[0])
+                    else:
+                        hub = message_hub()
             data = hub.handle_request(s)
             self.wfile.write(data.encode())
             print ("mail box logic2")
@@ -90,8 +95,10 @@ class myHandler(BaseHTTPRequestHandler):
                 resync_cnt = 0
                 d = pickle.dumps(hub)
                 create_or_open_db_from_file("mbox")
-                remove_blob_from_file("mbox", "mbox"):
+                remove_blob_from_file("mbox", "mbox")
                 insert_blob_to_file("mbox", d, "mbox")
+                print ("Dumping message hub blob:")
+                print (d)
             return
         if "outcomes" in s:
             outcomes = s["outcomes"][0].split(",")
