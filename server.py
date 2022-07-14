@@ -7,6 +7,7 @@ import os
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from bayes_net import BayesNetwork, ObjectStringAssociator
 from urllib.parse import parse_qs
+from message_hub import message_hub
 import os
 import http.server
 import socketserver
@@ -30,6 +31,8 @@ def create_text_field_closing_tag():
 	return s
 
 mbox = { }
+
+hub = message_hub()
 
 class myHandler(BaseHTTPRequestHandler):
     # Handler for the GET requests
@@ -68,6 +71,11 @@ class myHandler(BaseHTTPRequestHandler):
                 data = myfile.read()
                 self.wfile.write(data.encode())
             print ("mail box logic")
+            return
+        if "mailbox_new" in s:
+            data = hub.handle_request(s)
+            self.wfile.write(data.encode())
+            print ("mail box logic2")
             return
         if "outcomes" in s:
             outcomes = s["outcomes"][0].split(",")
