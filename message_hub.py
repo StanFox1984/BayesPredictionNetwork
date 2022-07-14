@@ -17,7 +17,7 @@ class message_hub:
         return self.__dict__[method]
 
     def add_extract_method(self, name):
-        construct_str = "def extract_" + name + "(s): return s['" + name + "']"
+        construct_str = "def extract_" + name + "(s): return s['" + name + "'][0]"
 #        print (construct_str)
         exec (construct_str)
 #        print ("self.__dict__['extract_" + name + "'] = extract_" + name)
@@ -140,6 +140,4 @@ def test():
 
     # should be "From: Stan Message: Hello World!"
     print (hub.handle_request( { "id" : "Stan2", "recv" : "", "hash" : "blabla" }))
-
-test()
 
