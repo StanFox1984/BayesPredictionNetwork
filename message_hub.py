@@ -3,9 +3,18 @@
 from datetime import date
 
 class message_hub:
+    tested = False
+
     def __init__(self):
         self.mbox = { }
         self.user_hashes = { }
+        if message_hub.tested != True:
+            message_hub.tested = True
+            res = test(type(self))
+            if res != True:
+                print ("Self tests failed!")
+            else:
+                print ("Self tests passed!")
 
     def __getattr__(self, method):
         if 'extract_' in str(method):
@@ -19,14 +28,14 @@ class message_hub:
     def __getstate__(self):
         new_dict = { }
         for key in self.__dict__:
-            if not "extract" in key:
+            if not "extract" in key and not "tested" in key:
                 new_dict[key] = self.__dict__[key]
         return new_dict
 
     def __setstate__(self, d): self.__dict__.update(d)
 
     def add_extract_method(self, name):
-        construct_str = "def extract_" + name + "(s): return s['" + name + "'][0]"
+        construct_str = "def extract_" + name + "(s): return s['" + name + "'][0] if type(s['" + name + "']) == list else s['" + name + "']"
 #        print (construct_str)
         exec (construct_str)
 #        print ("self.__dict__['extract_" + name + "'] = extract_" + name)
@@ -78,27 +87,27 @@ class message_hub:
             self.user_hashes[_id] = new_hash
 
         if "send" in s:
-                if not "message" in s:
-                    err_str = "No message field specified!"
-                    print (err_str)
-                    return err_str
-                message = self.extract_message(s)
+            if not "message" in s:
+                err_str = "No message field specified!"
+                print (err_str)
+                return err_str
+            message = self.extract_message(s)
 
-                if not "to" in s:
-                    err_str = "No 'to' field specified!"
-                    print (err_str)
-                    return err_str
-                to = self.extract_to(s)
+            if not "to" in s:
+                err_str = "No 'to' field specified!"
+                print (err_str)
+                return err_str
+            to = self.extract_to(s)
 
-                if not to in self.user_hashes:
-                    err_str = "No such recipient!"
-                    print (err_str)
-                    return err_str
+            if not to in self.user_hashes:
+                err_str = "No such recipient!"
+                print (err_str)
+                return err_str
 
-                if not to in self.mbox:
-                    self.mbox[to] = ""
+            if not to in self.mbox:
+                self.mbox[to] = ""
 
-                self.mbox[to] += "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
+            self.mbox[to] += "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
 
         if "recv" in s:
             if _id in self.mbox[_id]:
@@ -110,49 +119,83 @@ class message_hub:
         return "Success!"
 
 
-def test():
-    hub = message_hub()
+def test(_hubtype):
+    hub = _hubtype()
 
-    hub.handle_request({ "register" : "", "id" : "Stan", "pass" : "blabla", "hash" : "blabla" })
+    res = hub.handle_request({ "register" : "", "id" : "Stan", "pass" : "blabla", "hash" : "blabla" })
+
+    if res != "Success!":
+        return False
 
     # cause no id error
-    hub.handle_request({ })
+    res = hub.handle_request({ })
+    if res != "Can't communicate without id!":
+        return False
 
     # cause already registered error
-    hub.handle_request({ "register" : "", "id" : "Stan"})
+    res = hub.handle_request({ "register" : "", "id" : "Stan"})
+    if not "already registered!" in res:
+        return False
 
     # cause no password specified error
-    hub.handle_request({ "register" : "", "id" : "Stan2"})
+    res = hub.handle_request({ "register" : "", "id" : "Stan2"})
+    if res != "No password added!":
+        return False
 
     # cause no such id error
-    hub.handle_request({ "id" : "Stan2"})
+    res = hub.handle_request({ "id" : "Stan2"})
+    if not "Unregistered user" in res:
+        return False
 
     # cause no hash error
-    hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2" })
+    res = hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2" })
+    if res != "Couldn't authenticate without hash!":
+        return False
 
     # cause wrong hash error
-    hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2", "hash" : "blah" })
+    res = hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2", "hash" : "blah" })
+    if res != "Wrong hash - not authenticating!":
+        return False
 
     # cause no such recipient error
-    hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2", "hash" : "blabla" })
+    res = hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2", "hash" : "blabla" })
+    if res != "No such recipient!":
+        return False
 
     # cause no new hash error
-    hub.handle_request({ "id" : "Stan", "hash" : "blabla", "change_hash" : "" })
+    res = hub.handle_request({ "id" : "Stan", "hash" : "blabla", "change_hash" : "" })
+    if res != "No new hash specified!":
+        return False
 
-    hub.handle_request({ "id" : "Stan", "hash" : "blabla", "change_hash" : "", "new_hash" : "blah" })
+    res = hub.handle_request({ "id" : "Stan", "hash" : "blabla", "change_hash" : "", "new_hash" : "blah" })
+    if res != "Success!":
+        return False
 
-    hub.handle_request({ "register" : "", "id" : "Stan2", "pass" : "blabla", "hash" : "blabla" })
+    res = hub.handle_request({ "register" : "", "id" : "Stan2", "pass" : "blabla", "hash" : "blabla" })
+    if res != "Success!":
+        return False
 
-    hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2", "hash" : "blah" })
+    res = hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World!", "to" : "Stan2", "hash" : "blah" })
+    if res != "Success!":
+        return False
 
-    hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World2!", "to" : "Stan2", "hash" : "blah" })
+    res = hub.handle_request({ "id" : "Stan", "send" : "", "message" : "Hello World2!", "to" : "Stan2", "hash" : "blah" })
+    if res != "Success!":
+        return False
 
     # cause again no hash error
-    hub.handle_request( { "id" : "Stan2", "recv" : "" })
+    res = hub.handle_request( { "id" : "Stan2", "recv" : "" })
+    if res != "Couldn't authenticate without hash!":
+        return False
 
     # cause again wrong hash error
-    hub.handle_request( { "id" : "Stan2", "recv" : "", "hash" : "bbb" })
+    res = hub.handle_request( { "id" : "Stan2", "recv" : "", "hash" : "bbb" })
+    if res != "Wrong hash - not authenticating!":
+        return False
 
     # should be "From: Stan Message: Hello World!"
-    print (hub.handle_request( { "id" : "Stan2", "recv" : "", "hash" : "blabla" }))
+    res = hub.handle_request( { "id" : "Stan2", "recv" : "", "hash" : "blabla" })
+    if not "From: Stan|Message: Hello World!|" in res:
+        return False
 
+    return True
