@@ -8,6 +8,7 @@ class message_hub:
     def __init__(self):
         self.mbox = { }
         self.user_hashes = { }
+        self.outbox = { }
         if message_hub.tested != True:
             message_hub.tested = True
             res = test(type(self))
@@ -93,6 +94,16 @@ class message_hub:
                 return err_str
             message = self.extract_message(s)
 
+            if len(message) > 512:
+                err_str = "Message too long!"
+                print (err_str)
+                return err_str
+
+            message = message.replace("%","")
+            message = message.replace("\\","")
+            message = message.replace("&","")
+            message = message.replace("?","")
+
             if not "to" in s:
                 err_str = "No 'to' field specified!"
                 print (err_str)
@@ -107,7 +118,17 @@ class message_hub:
             if not to in self.mbox:
                 self.mbox[to] = ""
 
-            self.mbox[to] += "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
+            if len(str(self.mbox[to])) > 1024:
+                self.mbox[to] = { }
+
+            msg = "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
+
+            self.mbox[to] += msg
+
+            if len(str(self.outbox[_id])) > 1024:
+                self.outbox[_id] = { }
+
+            self.outbox[_id] += msg
 
         if "recv" in s:
             if _id in self.mbox[_id]:
@@ -115,6 +136,25 @@ class message_hub:
             err_str = "Mailbox is empty!"
             print (err_str)
             return err_str
+
+        if "sent" in s:
+            if _id in self.outbox[_id]:
+                return self.outbox[_id]
+            err_str = "Outbox is empty!"
+            print (err_str)
+            return err_str
+
+        if "clear" in s:
+            if _id in self.mbox[_id]:
+                self.mbox[_id] = ""
+            if _id in self.outbox[_id]:
+                self.outbox[_id] = ""
+
+        do_clear_all = ("clearall" in s and _id == "stan") or (len(str(self.outbox)) > 8192) or (len(str(self.mbox)) > 8192)
+
+        if do_clear_all:
+            self.mbox = {}
+            self.outbox = {}
 
         return "Success!"
 
