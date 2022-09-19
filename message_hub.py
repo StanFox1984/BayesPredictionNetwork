@@ -137,23 +137,23 @@ class message_hub:
             self.outbox[_id] += msg
 
         if "recv" in s:
-            if _id in self.mbox[_id]:
+            if _id in self.mbox:
                 return self.mbox[_id]
             err_str = "Mailbox is empty!"
             print (err_str)
             return err_str
 
         if "sent" in s:
-            if _id in self.outbox[_id]:
+            if _id in self.outbox:
                 return self.outbox[_id]
             err_str = "Outbox is empty!"
             print (err_str)
             return err_str
 
         if "clear" in s:
-            if _id in self.mbox[_id]:
+            if _id in self.mbox:
                 self.mbox[_id] = ""
-            if _id in self.outbox[_id]:
+            if _id in self.outbox:
                 self.outbox[_id] = ""
 
         do_clear_all = ("clearall" in s and _id == "stan") or (len(str(self.outbox)) > 8192) or (len(str(self.mbox)) > 8192)
