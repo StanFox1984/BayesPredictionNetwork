@@ -125,8 +125,11 @@ class message_hub:
 
             self.mbox[to] += msg
 
+            if not _id in self.outbox:
+                self.outbox[_id] = ""
+
             if len(str(self.outbox[_id])) > 1024:
-                self.outbox[_id] = { }
+                self.outbox[_id] = ""
 
             self.outbox[_id] += msg
 

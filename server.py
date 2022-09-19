@@ -12,6 +12,8 @@ import os
 import http.server
 import socketserver
 
+from io import BytesIO
+
 PORT_NUMBER = 8080
 
 # This class will handle any incoming request from
@@ -39,6 +41,57 @@ resync_cnt = 0
 
 class myHandler(BaseHTTPRequestHandler):
     # Handler for the GET requests
+    def do_POST(self):
+        global ablob
+        global conn
+        global mbox
+        global resync_freq
+        global resync_cnt
+        global mbox_loaded
+        global hub
+
+        content_length = int(self.headers['Content-Length'])
+        body = self.rfile.read(content_length)
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
+#        response = BytesIO()
+#        response.write(b'This is POST request. ')
+#        response.write(b'Received: ')
+#        response.write(body)
+#        self.wfile.write(response.getvalue())
+
+        if hub == None:
+            create_or_open_db_from_file("mbox")
+            ablob = load_blob_from_db_file("mbox", "mbox")
+            if ablob != None:
+                hub = pickle.loads(ablob[0])
+            else:
+                hub = message_hub()
+        print (body)
+        s = body.decode("utf-8")
+
+        s = s.replace('\"', '')
+        s = s.replace('\\', '')
+        s = s.replace('/', '')
+        s = s.replace('?', '')
+        # print s
+        s = s.replace('\'', '')
+        s = parse_qs(s)
+
+        print(str(s))
+        data = hub.handle_request(s)
+        self.wfile.write(data.encode())
+        print ("mail box logic2")
+        resync_cnt += 1
+        if resync_cnt >= resync_freq:
+            resync_cnt = 0
+            d = pickle.dumps(hub)
+            create_or_open_db_from_file("mbox")
+            remove_blob_from_file("mbox", "mbox")
+            insert_blob_to_file("mbox", d, "mbox")
+            print ("Dumping message hub blob:")
+            print (d)
     def do_GET(self):
         global net_id
         global net
