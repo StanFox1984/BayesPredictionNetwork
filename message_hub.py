@@ -64,7 +64,12 @@ class message_hub:
             self.user_hashes[_id] = self.extract_pass(s)
 
         if not _id in self.user_hashes:
-            err_str = "Unregistered user " + _id + "!"
+            err_str = "Unregistered user, registering then :) " + _id + "!"
+            if not "pass" in s:
+                err_str += "\n No password added!"
+                print (err_str)
+                return err_str
+            self.user_hashes[_id] = self.extract_pass(s)
             print (err_str)
             return err_str
 
@@ -110,10 +115,10 @@ class message_hub:
                 return err_str
             to = self.extract_to(s)
 
-            if not to in self.user_hashes:
-                err_str = "No such recipient!"
-                print (err_str)
-                return err_str
+#            if not to in self.user_hashes:
+#                err_str = "No such recipient!"
+#                print (err_str)
+#                return err_str
 
             if not to in self.mbox:
                 self.mbox[to] = ""
@@ -122,7 +127,7 @@ class message_hub:
                 self.outbox[_id] = ""
 
             if len(str(self.mbox[to])) > 1024:
-                self.mbox[to] = { }
+                self.mbox[to] = ""
 
             msg = "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
 
