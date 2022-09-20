@@ -64,12 +64,12 @@ class message_hub:
             self.user_hashes[_id] = self.extract_pass(s)
 
         if not _id in self.user_hashes:
-            err_str = "Unregistered user, registering then :) " + _id + "!"
-            if not "pass" in s:
+            err_str = "Unregistered user, registering then :) User:" + _id + "!"
+            if not "hash" in s:
                 err_str += "\n No password added!"
                 print (err_str)
                 return err_str
-            self.user_hashes[_id] = self.extract_pass(s)
+            self.user_hashes[_id] = self.extract_hash(s)
             print (err_str)
             return err_str
 
