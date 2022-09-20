@@ -147,7 +147,7 @@ class myHandler(BaseHTTPRequestHandler):
             self.end_headers()
             with open("app-debug.apk", "rb") as myfile:
                 data = myfile.read()
-                self.wfile.write(data.encode())
+                self.wfile.write(data)
             return
         if "mailbox_new" in s:
             self.send_response(200)
