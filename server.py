@@ -132,6 +132,11 @@ class myHandler(BaseHTTPRequestHandler):
                 self.wfile.write(data.encode())
             print ("mail box logic")
             return
+        if "StanMessenger" in s:
+            with open("stanmessenger.html", "r") as myfile:
+                data = myfile.read()
+                self.wfile.write(data.encode())
+            return
         if "mailbox_new" in s:
             if hub == None:
                     create_or_open_db_from_file("mbox")
