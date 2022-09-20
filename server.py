@@ -103,11 +103,9 @@ class myHandler(BaseHTTPRequestHandler):
         global mbox_loaded
         global hub
 
-        self.send_response(200)
-        self.send_header("Content-type", "text/html")
-        self.end_headers()
+
         # Send the html message
-        # print self.path
+        print ("Path: ", self.path)
         s = self.path.replace("%20", " ")
         # print s
         s = s.replace("/", "")
@@ -116,9 +114,12 @@ class myHandler(BaseHTTPRequestHandler):
         s = s.replace("'", "")
         # print s
         s = parse_qs(s)
-        print(str(s))
+        print("Parsed path: ", str(s))
 
         if "mailbox" in s:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
             if "id" in s and "message" in s:
                 message = s["message"][0]
                 _id = s["id"][0]
@@ -133,11 +134,25 @@ class myHandler(BaseHTTPRequestHandler):
             print ("mail box logic")
             return
         if "StanMessenger" in s:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
+            with open("stanmessenger.html", "r") as myfile:
+                data = myfile.read()
+                self.wfile.write(data.encode())
+            return
+        if "get_messenger" in s:
+            self.send_response(200)
+            self.send_header("Content-type", "application/octet-stream")
+            self.end_headers()
             with open("stanmessenger.html", "r") as myfile:
                 data = myfile.read()
                 self.wfile.write(data.encode())
             return
         if "mailbox_new" in s:
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.end_headers()
             if hub == None:
                     create_or_open_db_from_file("mbox")
                     ablob = load_blob_from_db_file("mbox", "mbox")
@@ -198,6 +213,9 @@ class myHandler(BaseHTTPRequestHandler):
             self.wfile.write(str(o).encode())
             self.wfile.write(create_text_field_closing_tag().encode())
 
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
         with open("page.html", "r") as myfile:
             data = myfile.read()
             self.wfile.write(data.encode())
