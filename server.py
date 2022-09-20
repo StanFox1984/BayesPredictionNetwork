@@ -133,7 +133,7 @@ class myHandler(BaseHTTPRequestHandler):
                 self.wfile.write(data.encode())
             print ("mail box logic")
             return
-        if "StanMessenger" in s:
+        if "StanMessenger" in self.path:
             self.send_response(200)
             self.send_header("Content-type", "text/html")
             self.end_headers()
@@ -141,7 +141,7 @@ class myHandler(BaseHTTPRequestHandler):
                 data = myfile.read()
                 self.wfile.write(data.encode())
             return
-        if "get_messenger" in s:
+        if "get_messenger" in self.path:
             self.send_response(200)
             self.send_header("Content-type", "application/octet-stream")
             self.end_headers()
