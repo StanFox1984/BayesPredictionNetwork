@@ -145,7 +145,7 @@ class myHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "application/octet-stream")
             self.end_headers()
-            with open("stanmessenger.html", "r") as myfile:
+            with open("app-debug.apk", "r") as myfile:
                 data = myfile.read()
                 self.wfile.write(data.encode())
             return
