@@ -141,7 +141,7 @@ class myHandler(BaseHTTPRequestHandler):
                 data = myfile.read()
                 self.wfile.write(data.encode())
             return
-        if "get_messenger" in self.path:
+        if "get_messenger.apk" in self.path:
             self.send_response(200)
             self.send_header("Content-type", "application/octet-stream")
             self.end_headers()
