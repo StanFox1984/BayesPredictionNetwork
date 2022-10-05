@@ -92,6 +92,46 @@ class myHandler(BaseHTTPRequestHandler):
             insert_blob_to_file("mbox", d, "mbox")
             print ("Dumping message hub blob:")
             print (d)
+    def do_PUT(self):
+        global hub
+        print ("Path: ", self.path)
+        s = self.path.replace("%20", " ")
+        # print s
+        s = s.replace("/", "")
+        s = s.replace("?", "")
+        # print s
+        s = s.replace("'", "")
+        # print s
+        s = parse_qs(s)
+        print("Parsed path: ", str(s))
+        path = s
+
+        if hub == None:
+            create_or_open_db_from_file("mbox")
+            ablob = load_blob_from_db_file("mbox", "mbox")
+            if ablob != None:
+                hub = pickle.loads(ablob[0])
+            else:
+                hub = message_hub()
+
+        if not hub.authenticate_as_admin(path):
+            self.send_response(403)
+            self.end_headers()
+            return
+
+        if "put_database" in path:
+            if path.endswith('/'):
+                self.send_response(405, "Method Not Allowed")
+                self.wfile.write("PUT not allowed on a directory\n".encode())
+                return
+            else:
+                try:
+                    os.makedirs(os.path.dirname(path))
+                except FileExistsError: pass
+                length = int(self.headers['Content-Length'])
+                with open("mbox", 'wb') as f:
+                    f.write(self.rfile.read(length))
+                self.send_response(201, "Created")
     def do_GET(self):
         global net_id
         global net
@@ -146,6 +186,25 @@ class myHandler(BaseHTTPRequestHandler):
             self.send_header("Content-type", "application/octet-stream")
             self.end_headers()
             with open("app-debug.apk", "rb") as myfile:
+                data = myfile.read()
+                self.wfile.write(data)
+            return
+        if "get_database.bin" in self.path:
+            if hub == None:
+                create_or_open_db_from_file("mbox")
+                ablob = load_blob_from_db_file("mbox", "mbox")
+                if ablob != None:
+                    hub = pickle.loads(ablob[0])
+                else:
+                    hub = message_hub()
+            if not hub.authenticate_as_admin(s):
+                self.send_response(403)
+                self.end_headers()
+                return
+            self.send_response(200)
+            self.send_header("Content-type", "application/octet-stream")
+            self.end_headers()
+            with open("mbox", "rb") as myfile:
                 data = myfile.read()
                 self.wfile.write(data)
             return

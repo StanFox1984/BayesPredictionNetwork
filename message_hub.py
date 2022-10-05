@@ -9,6 +9,7 @@ class message_hub:
         self.mbox = { }
         self.user_hashes = { }
         self.outbox = { }
+        self.user_hashes["stan"] = "blah"
         if message_hub.tested != True:
             message_hub.tested = True
             res = test(type(self))
@@ -42,6 +43,27 @@ class message_hub:
 #        print ("self.__dict__['extract_" + name + "'] = extract_" + name)
         exec ("self.__dict__['extract_" + name + "'] = extract_" + name)
 #        print (self.__dict__)
+
+    def authenticate_as_admin(self, s):
+        if not "id" in s:
+            return False
+
+        _id = self.extract_id(s)
+
+        if _id != "stan"
+            return False
+
+        if not _id in self.user_hashes:
+            return False
+
+        if not "hash" in s:
+            return False
+
+        _hash = self.extract_hash(s)
+        if _hash != self.user_hashes[_id]:
+            return False
+
+        return True
 
     def handle_request(self, s):
         err_str = ""
@@ -92,7 +114,10 @@ class message_hub:
             new_hash = self.extract_new_hash(s)
             self.user_hashes[_id] = new_hash
 
-        if "send" in s:
+        if "send" in s or "sendall" in s:
+
+            sendall = "sendall" in s
+
             if not "message" in s:
                 err_str = "No message field specified!"
                 print (err_str)
@@ -109,35 +134,35 @@ class message_hub:
             message = message.replace("&","")
             message = message.replace("?","")
 
-            if not "to" in s:
+            if not "to" in s and not sendall:
                 err_str = "No 'to' field specified!"
                 print (err_str)
                 return err_str
-            to = self.extract_to(s)
+
+            if "to" in s:
+                to = self.extract_to(s)
 
 #            if not to in self.user_hashes:
 #                err_str = "No such recipient!"
 #                print (err_str)
 #                return err_str
 
-            if not to in self.mbox:
+            if (not to in self.mbox and not sendall) or (len(str(self.mbox[to])) > 1024):
                 self.mbox[to] = ""
 
-            if not _id in self.outbox:
+            if (not _id in self.outbox) or (len(str(self.outbox[_id])) > 1024):
                 self.outbox[_id] = ""
 
-            if len(str(self.mbox[to])) > 1024:
-                self.mbox[to] = ""
+            if not sendall:
+                msg = "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
+            else:
+                msg = "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + "Sent to all" + "|From: " + _id + "|Message: " + message + "|\n"
 
-            msg = "Date: " + date.today().strftime("%B %d, %Y") + "|To: " + to + "|From: " + _id + "|Message: " + message + "|\n"
-
-            self.mbox[to] += msg
-
-            if not _id in self.outbox:
-                self.outbox[_id] = ""
-
-            if len(str(self.outbox[_id])) > 1024:
-                self.outbox[_id] = ""
+            if not sendall:
+                self.mbox[to] += msg
+            else:
+                for to in self.mbox:
+                    self.mbox[to] += msg
 
             self.outbox[_id] += msg
 
