@@ -50,7 +50,7 @@ class message_hub:
 
         _id = self.extract_id(s)
 
-        if _id != "stan"
+        if _id != "stan":
             return False
 
         if not _id in self.user_hashes:
