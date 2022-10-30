@@ -10,6 +10,7 @@ class message_hub:
         self.user_hashes = { }
         self.outbox = { }
         self.user_hashes["stan"] = "blah"
+        self.user_locations = { }
         if message_hub.tested != True:
             message_hub.tested = True
             res = test(type(self))
@@ -185,6 +186,25 @@ class message_hub:
                 self.mbox[_id] = ""
             if _id in self.outbox:
                 self.outbox[_id] = ""
+
+        if "set_location" in s:
+            location = self.extract_set_location(s)
+            self.user_locations[_id] = location
+
+        if "get_location" in s:
+            if not "name" in s:
+                err_str = "No name in request!"
+                print (err_str)
+                return err_str
+
+            name = self.extract_name(s)
+
+            if not name in self.user_locations:
+                err_str = "Unknown user " + name + "!"
+                print (err_str)
+                return err_str
+
+            return self.user_locations[name]
 
         do_clear_all = ("clearall" in s and _id == "stan") or (len(str(self.outbox)) > 8192) or (len(str(self.mbox)) > 8192)
 
