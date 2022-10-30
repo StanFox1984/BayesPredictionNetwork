@@ -68,6 +68,8 @@ class message_hub:
 
     def handle_request(self, s):
         err_str = ""
+        handled = False
+
         if not "id" in s:
             err_str = "Can't communicate without id!"
             print (err_str)
@@ -76,6 +78,7 @@ class message_hub:
         _id = self.extract_id(s)
 
         if "register" in s:
+            handled = True
             if _id in self.user_hashes:
                 err_str = "Such user " + _id + " already registered!"
                 print (err_str)
@@ -108,6 +111,7 @@ class message_hub:
             return err_str
 
         if "change_hash" in s:
+            handled = True
             if not "new_hash" in s:
                 err_str = "No new hash specified!"
                 print (err_str)
@@ -116,7 +120,7 @@ class message_hub:
             self.user_hashes[_id] = new_hash
 
         if "send" in s or "sendall" in s:
-
+            handled = True
             sendall = "sendall" in s
 
             if not "message" in s:
@@ -168,6 +172,7 @@ class message_hub:
             self.outbox[_id] += msg
 
         if "recv" in s:
+            handled = True
             if _id in self.mbox:
                 return self.mbox[_id]
             err_str = "Mailbox is empty!"
@@ -175,6 +180,7 @@ class message_hub:
             return err_str
 
         if "sent" in s:
+            handled = True
             if _id in self.outbox:
                 return self.outbox[_id]
             err_str = "Outbox is empty!"
@@ -182,16 +188,19 @@ class message_hub:
             return err_str
 
         if "clear" in s:
+            handled = True
             if _id in self.mbox:
                 self.mbox[_id] = ""
             if _id in self.outbox:
                 self.outbox[_id] = ""
 
         if "set_location" in s:
+            handled = True
             location = self.extract_set_location(s)
             self.user_locations[_id] = location
 
         if "get_location" in s:
+            handled = True
             if not "name" in s:
                 err_str = "No name in request!"
                 print (err_str)
@@ -209,8 +218,14 @@ class message_hub:
         do_clear_all = ("clearall" in s and _id == "stan") or (len(str(self.outbox)) > 8192) or (len(str(self.mbox)) > 8192)
 
         if do_clear_all:
+            handled = True
             self.mbox = {}
             self.outbox = {}
+
+        if not handled:
+            err_str = "Unknown command! " + s
+            print(err_str)
+            return err_str
 
         return "Success!"
 
